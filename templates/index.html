@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF转有声读物 - 实时转换</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+        
+        .upload-section.dragover {
+            border-color: #4facfe;
+            background: #e3f2fd;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .voice-selector {
+            margin: 20px 0;
+        }
+        
+        .voice-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .voice-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .progress-section.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .status-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-item h3 {
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+        
+        .audio-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+        }
+        
+        .audio-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .audio-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .audio-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .audio-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .audio-item h3 {
+            color: #4facfe;
+            margin-bottom: 10px;
+        }
+        
+        .audio-item p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .audio-controls audio {
+            flex: 1;
+        }
+        
+        .download-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .download-btn:hover {
+            background: #3d8bfe;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 PDF转有声读物</h1>
+            <p>实时转换，在线试听，每5分钟生成一个音频文件</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- 上传区域 -->
+            <div class="upload-section" id="uploadSection">
+                <h2>📁 上传PDF文件</h2>
+                <p>拖拽文件到此处或点击选择文件</p>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    选择PDF文件
+                </button>
+                <div id="fileInfo" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- 语音选择 -->
+            <div class="voice-selector">
+                <label for="voiceSelect">🎤 选择语音：</label>
+                <select id="voiceSelect">
+                    <option value="v2/en_speaker_0">英文女声1</option>
+                    <option value="v2/en_speaker_1">英文女声2</option>
+                    <option value="v2/en_speaker_6" selected>英文男声1 (推荐)</option>
+                    <option value="v2/en_speaker_7">英文男声2</option>
+                    <option value="v2/en_speaker_8">英文男声3</option>
+                    <option value="v2/zh_speaker_0">中文女声1</option>
+                    <option value="v2/zh_speaker_1">中文女声2</option>
+                    <option value="v2/zh_speaker_2">中文男声1</option>
+                    <option value="v2/zh_speaker_3">中文男声2</option>
+                </select>
+            </div>
+            
+            <!-- 控制按钮 -->
+            <div class="control-buttons">
+                <button class="btn btn-primary" id="startBtn" onclick="startConversion()">
+                    🚀 开始转换
+                </button>
+                <button class="btn btn-danger" id="stopBtn" onclick="stopConversion()" disabled>
+                    ⏹️ 停止转换
+                </button>
+                <button class="btn btn-success" id="clearBtn" onclick="clearFiles()">
+                    🗑️ 清理文件
+                </button>
+            </div>
+            
+            <!-- 进度显示 -->
+            <div class="progress-section" id="progressSection">
+                <h2>📊 转换进度</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status-info">
+                    <div class="status-item">
+                        <h3>总片段数</h3>
+                        <p id="totalChunks">0</p>
+                    </div>
+                    <div class="status-item">
+                        <h3>已完成</h3>
+                        <p id="completedChunks">0</p>
+                    </div>
+                    <div class="status-item">
+                        <h3>进度</h3>
+                        <p id="progressText">0%</p>
+                    </div>
+                    <div class="status-item">
+                        <h3>已生成文件</h3>
+                        <p id="generatedFiles">0</p>
+                    </div>
+                </div>
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>正在转换中，请稍候...</p>
+                </div>
+            </div>
+            
+            <!-- 音频文件列表 -->
+            <div class="audio-section">
+                <h2>🎵 生成的音频文件</h2>
+                <div class="audio-list" id="audioList">
+                    <div class="loading" id="noAudioMessage">
+                        <p>暂无音频文件，请先开始转换</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFile = null;
+        let statusInterval = null;
+        
+        // 文件上传处理
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadFile(file);
+            }
+        });
+        
+        // 拖拽上传
+        const uploadSection = document.getElementById('uploadSection');
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') {
+                uploadFile(file);
+            } else {
+                showMessage('请上传PDF文件', 'error');
+            }
+        });
+        
+        // 上传文件
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentFile = data;
+                    document.getElementById('fileInfo').innerHTML = 
+                        `<p style="color: green;">✓ 文件上传成功: ${data.filename}</p>`;
+                    showMessage('文件上传成功！', 'success');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('上传失败: ' + error.message, 'error');
+            });
+        }
+        
+        // 开始转换
+        function startConversion() {
+            if (!currentFile) {
+                showMessage('请先上传PDF文件', 'error');
+                return;
+            }
+            
+            const voicePreset = document.getElementById('voiceSelect').value;
+            
+            fetch('/start_conversion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filepath: currentFile.filepath,
+                    voice_preset: voicePreset
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('开始转换...', 'info');
+                    document.getElementById('progressSection').classList.add('active');
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    startStatusPolling();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('启动转换失败: ' + error.message, 'error');
+            });
+        }
+        
+        // 停止转换
+        function stopConversion() {
+            fetch('/stop_conversion', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('已停止转换', 'info');
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    stopStatusPolling();
+                }
+            });
+        }
+        
+        // 清理文件
+        function clearFiles() {
+            if (confirm('确定要清理所有生成的文件吗？')) {
+                fetch('/clear_files', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('文件已清理', 'success');
+                        updateAudioList([]);
+                        document.getElementById('progressSection').classList.remove('active');
+                    } else {
+                        showMessage(data.error, 'error');
+                    }
+                });
+            }
+        }
+        
+        // 开始状态轮询
+        function startStatusPolling() {
+            statusInterval = setInterval(updateStatus, 2000);
+        }
+        
+        // 停止状态轮询
+        function stopStatusPolling() {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+                statusInterval = null;
+            }
+        }
+        
+        // 更新状态
+        function updateStatus() {
+            fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                updateProgress(data);
+                updateAudioList(data.generated_files || []);
+                
+                if (!data.is_processing) {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    stopStatusPolling();
+                }
+            })
+            .catch(error => {
+                console.error('获取状态失败:', error);
+            });
+        }
+        
+        // 更新进度
+        function updateProgress(data) {
+            document.getElementById('totalChunks').textContent = data.total_chunks || 0;
+            document.getElementById('completedChunks').textContent = data.completed_chunks || 0;
+            document.getElementById('progressText').textContent = (data.progress || 0).toFixed(1) + '%';
+            document.getElementById('generatedFiles').textContent = (data.generated_files || []).length;
+            
+            document.getElementById('progressFill').style.width = (data.progress || 0) + '%';
+        }
+        
+        // 更新音频列表
+        function updateAudioList(files) {
+            const audioList = document.getElementById('audioList');
+            
+            if (files.length === 0) {
+                audioList.innerHTML = '<div class="loading" id="noAudioMessage"><p>暂无音频文件，请先开始转换</p></div>';
+                return;
+            }
+            
+            audioList.innerHTML = files.map(file => `
+                <div class="audio-item">
+                    <h3>${file.filename}</h3>
+                    <p>第 ${file.part_number} 部分 / 共 ${file.total_parts} 部分</p>
+                    <p>文件大小: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p>生成时间: ${new Date(file.created_time).toLocaleString()}</p>
+                    <div class="audio-controls">
+                        <audio controls>
+                            <source src="/audio/${file.filename}" type="audio/wav">
+                            您的浏览器不支持音频播放
+                        </audio>
+                        <button class="download-btn" onclick="downloadAudio('${file.filename}')">
+                            下载
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 下载音频
+        function downloadAudio(filename) {
+            const link = document.createElement('a');
+            link.href = `/audio/${filename}`;
+            link.download = filename;
+            link.click();
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            
+            const container = document.querySelector('.main-content');
+            container.insertBefore(messageDiv, container.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+        
+        // 页面加载时获取初始状态
+        window.addEventListener('load', function() {
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

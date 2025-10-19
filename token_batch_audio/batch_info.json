@@ -1,0 +1,61 @@
+{
+  "total_batches": 6,
+  "audio_files": [
+    "token_batch_audio/batch_001.wav",
+    "token_batch_audio/batch_002.wav",
+    "token_batch_audio/batch_003.wav",
+    "token_batch_audio/batch_004.wav",
+    "token_batch_audio/batch_005.wav",
+    "token_batch_audio/batch_006.wav"
+  ],
+  "batches": [
+    {
+      "batch_number": 1,
+      "audio_file": "token_batch_audio/batch_001.wav",
+      "page_range": "2-95",
+      "token_count": 39781,
+      "char_count": 171850,
+      "paragraph_count": 89
+    },
+    {
+      "batch_number": 2,
+      "audio_file": "token_batch_audio/batch_002.wav",
+      "page_range": "96-176",
+      "token_count": 39726,
+      "char_count": 169865,
+      "paragraph_count": 78
+    },
+    {
+      "batch_number": 3,
+      "audio_file": "token_batch_audio/batch_003.wav",
+      "page_range": "177-257",
+      "token_count": 39478,
+      "char_count": 166689,
+      "paragraph_count": 79
+    },
+    {
+      "batch_number": 4,
+      "audio_file": "token_batch_audio/batch_004.wav",
+      "page_range": "258-337",
+      "token_count": 39916,
+      "char_count": 167544,
+      "paragraph_count": 78
+    },
+    {
+      "batch_number": 5,
+      "audio_file": "token_batch_audio/batch_005.wav",
+      "page_range": "338-418",
+      "token_count": 39483,
+      "char_count": 165131,
+      "paragraph_count": 79
+    },
+    {
+      "batch_number": 6,
+      "audio_file": "token_batch_audio/batch_006.wav",
+      "page_range": "419-450",
+      "token_count": 9634,
+      "char_count": 42640,
+      "paragraph_count": 30
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+#EXTM3U
+#EXTINF:-1,批次 1
+batch_001.wav
+#EXTINF:-1,批次 2
+batch_002.wav
+#EXTINF:-1,批次 3
+batch_003.wav
+#EXTINF:-1,批次 4
+batch_004.wav
+#EXTINF:-1,批次 5
+batch_005.wav
+#EXTINF:-1,批次 6
+batch_006.wav

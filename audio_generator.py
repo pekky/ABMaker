@@ -4,9 +4,22 @@
 import os
 import numpy as np
 from typing import List, Optional
+import torch
 from bark import SAMPLE_RATE, generate_audio, preload_models
 from scipy.io import wavfile
 from tqdm import tqdm
+
+# Torch 2.6 flips torch.load(weights_only=True) by default; Bark checkpoints rely on legacy pickles.
+# Keep behavior backwards-compatible while we trust upstream Bark releases.
+_torch_load = torch.load
+
+
+def _torch_load_with_compat(*args, **kwargs):
+    kwargs.setdefault("weights_only", False)
+    return _torch_load(*args, **kwargs)
+
+
+torch.load = _torch_load_with_compat
 
 
 class AudioGenerator:
@@ -132,5 +145,4 @@ class AudioGenerator:
             "法文": [f"v2/fr_speaker_{i}" for i in range(10)],
             "韩文": [f"v2/ko_speaker_{i}" for i in range(10)],
         }
-
 

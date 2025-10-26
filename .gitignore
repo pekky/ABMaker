@@ -31,6 +31,7 @@ wheels/
 *.mp3
 *.flac
 temp_audio_chunks/
+tmp/
 output/
 
 # PDF文件（可选）
